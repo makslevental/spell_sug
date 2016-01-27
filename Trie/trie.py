@@ -7,7 +7,7 @@ import copy
 from collections import MutableMapping
 import pprint
 
-# singleton sentinel to cap leaves
+# #singleton sentinel to cap leaves
 # class SENTINEL(object):
 #     pass
 #
@@ -43,11 +43,11 @@ import pprint
 #
 #     def __setstate__(self, state):
 #         self.letter, self.children = state
-#
+
 
 class Trie:
     def __init__(self):
-        self._root = dict()
+        self._root = {}
         self._pp = pprint.PrettyPrinter(indent=1)
 
     def __repr__(self):
@@ -64,10 +64,34 @@ class Trie:
             if l in next:
                 next = next[l]
             else:
-                next[l] = dict()
+                next[l] = {}
                 next = next[l]
+        next['!']={}
 
+    def matches(self,word):
+        p = self._root[word[0]]
+        for l in word[1:]:
+            p = p[l]
 
+        sug = ['#']
+        sugs = []
+        stack = []
+        stack.append(p.iteritems())
+        while stack:
+            try:
+                nxt = stack[-1].next()
+            except StopIteration:
+                sug.pop()
+                stack.pop()
+                continue
+            letter, p = nxt
+            sug.append(letter)
+            if p:
+                stack.append(p.iteritems())
+            else:
+                sugs.append("".join(sug))
+                sug.pop()
+        return sugs
 
     @classmethod
     def fromlist(cls,corpus):
@@ -81,5 +105,5 @@ class Trie:
 if __name__ == '__main__':
 
     t = Trie.fromlist(['bob','ben','benton','bedstuy'])
-
     print t
+    print t.matches('be')
