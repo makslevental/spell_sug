@@ -5,7 +5,7 @@ Trie data structure specialized to strings, insertions and traversals only.
 Adapted from https://bitbucket.org/gsakkis/pytrie.
 Work only for py 2.
 """
-import curses, traceback
+import curses, traceback, os
 import pprint
 
 # #singleton sentinel to cap leaves
@@ -126,68 +126,74 @@ if __name__ == '__main__':
     #         d,r = t.matches(start[i],d)
     #         print ",".join(map(lambda x: start[:i]+x,r[1:10]))
 
-    t = Trie.fromlist(['ben','benton','benjamin','bedstuy','bedford'])
-    letter = raw_input('write a letter: ')
-    word = [letter]
-    d,r = t.matches(letter)
-    i = 1
-    print ",".join(map(lambda x: ''.join(word[:i])+x[1:],r[0:10]))
-    while True:
-        i+=1
-        letter = raw_input('write a letter: ')
-        word.append(letter)
-        d,r = t.matches(letter,d)
-        print ",".join(map(lambda x: ''.join(word[:i])+x[1:],r[0:10]))
-    # try:
-    #     # Initialize curses
-    #     stdscr = curses.initscr()
-    #     stdscr.clear()
-    #     # where no buffering is performed on keyboard input
-    #     curses.cbreak()
-    #
-    #     # In keypad mode, escape sequences for special keys
-    #     # (like the cursor keys) will be interpreted and
-    #     # a special value like curses.KEY_LEFT will be returned
-    #     stdscr.keypad(1)
-    #
-    #
-    #     curses.echo()
-    #     stdscr.addstr(2, 3, 'write a word')
-    #     stdscr.refresh()
-    #
-    #     c = 3
-    #     letter = stdscr.getkey(2 + 1, c)
-    #     c += 1
-    #     word = [letter]
-    #     d,r = t.matches(letter)
-    #     i = 1
-    #     stdscr.addstr(1,3, ''.join(word))
-    #     stdscr.addstr(4,3,",".join(map(lambda x: ''.join(word[:i-1])+x,r[1:10])))
-    #     while True:
-    #         letter = stdscr.getkey(2 + 1, c)
-    #         # if letter == 'KEY_BACKSPACE':
-    #         #     word.pop()
-    #         #     stdscr.addstr(1,3, ''.join(word))
-    #         #     stdscr.
-    #         #     continue
-    #         word.append(letter)
-    #         stdscr.addstr(1,3, ''.join(word))
-    #         c+=1
-    #         i+=1
-    #         d,r = t.matches(letter,d)
-    #         print d,r
-    #         stdscr.addstr(4,3,",".join(map(lambda x: ''.join(word[:i-1])+x,r[1:10])))
-    #
-    #
-    #     # Set everything back to normal
-    #     stdscr.keypad(0)
-    #     curses.echo()
-    #     curses.nocbreak()
-    #     curses.endwin()                 # Terminate curses
-    # except Exception as e:
-    #     # In event of error, restore terminal to sane state.
-    #     stdscr.keypad(0)
-    #     curses.echo()
-    #     curses.nocbreak()
-    #     curses.endwin()
-    #     traceback.print_exc()           # Print the exception
+    with open(os.path.dirname(os.path.realpath(__file__))+os.path.sep+"../lang/english_words.txt") as f:
+            t = Trie.fromlist(f.read().split('\n'))
+
+    # letter = raw_input('write a letter: ')
+    # word = [letter]
+    # d,r = t.matches(letter)
+    # i = 1
+    # print ",".join(map(lambda x: ''.join(word[:i])+x[1:],r[0:10]))
+    # while True:
+    #     i+=1
+    #     letter = raw_input('write a letter: ')
+    #     word.append(letter)
+    #     d,r = t.matches(letter,d)
+    #     print ",".join(map(lambda x: ''.join(word[:i])+x[1:],r[0:10]))
+    try:
+        # Initialize curses
+        stdscr = curses.initscr()
+        stdscr.clear()
+        # where no buffering is performed on keyboard input
+        curses.cbreak()
+
+        # In keypad mode, escape sequences for special keys
+        # (like the cursor keys) will be interpreted and
+        # a special value like curses.KEY_LEFT will be returned
+        stdscr.keypad(1)
+
+
+        curses.echo()
+        stdscr.addstr(2, 3, 'start writing a word')
+        stdscr.refresh()
+
+        c = 3
+        letter = stdscr.getkey(2 + 1, c)
+        c += 1
+        word = [letter]
+        d,r = t.matches(letter)
+        i = 1
+        # stdscr.addstr(1,3, ''.join(word))
+        stdscr.addstr(4,3,",".join(map(lambda x: ''.join(word[:i])+x[i:],r[1:10])))
+        stdscr.refresh()
+        while True:
+            letter = stdscr.getkey(2 + 1, c)
+            # if letter == 'KEY_BACKSPACE':
+            #     word.pop()
+            #     stdscr.addstr(1,3, ''.join(word))
+            # TODO-me statistics on at what word length i should just do pruning of the list
+            # and hence be able to back up here
+            #     continue
+            word.append(letter)
+            # stdscr.addstr(1,3, ''.join(word))
+            c+=1
+            i+=1
+            d,r = t.matches(letter,d)
+            # print d,r
+            stdscr.addstr(4,3,",".join(map(lambda x: ''.join(word[:i])+x[1:],r[0:10])))
+            stdscr.clrtoeol()
+            stdscr.refresh()
+
+
+        # Set everything back to normal
+        stdscr.keypad(0)
+        curses.echo()
+        curses.nocbreak()
+        curses.endwin()                 # Terminate curses
+    except Exception as e:
+        # In event of error, restore terminal to sane state.
+        stdscr.keypad(0)
+        curses.echo()
+        curses.nocbreak()
+        curses.endwin()
+        traceback.print_exc()           # Print the exception
