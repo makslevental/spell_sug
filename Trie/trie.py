@@ -1,10 +1,11 @@
+
+# -*- coding: utf-8 -*-
 """
 Trie data structure specialized to strings, insertions and traversals only.
 Adapted from https://bitbucket.org/gsakkis/pytrie.
 Work only for py 2.
 """
-import copy
-from collections import MutableMapping
+import curses, traceback
 import pprint
 
 # #singleton sentinel to cap leaves
@@ -66,32 +67,37 @@ class Trie:
             else:
                 next[l] = {}
                 next = next[l]
-        next['!']={}
+        next['&']={}
 
-    def matches(self,word):
-        p = self._root[word[0]]
+    def matches(self, word, root=None):
+        if not root:
+            root = self._root
+        p = root[word[0]]
         for l in word[1:]:
             p = p[l]
 
-        sug = ['#']
+        new_root = p
+        sug = ['']
         sugs = []
-        stack = []
-        stack.append(p.iteritems())
-        while stack:
+        iter_stack = []
+        iter_stack.append(p.iteritems())
+
+        while iter_stack:
             try:
-                nxt = stack[-1].next()
+                nxt = iter_stack[-1].next()
             except StopIteration:
                 sug.pop()
-                stack.pop()
+                iter_stack.pop()
                 continue
             letter, p = nxt
             sug.append(letter)
             if p:
-                stack.append(p.iteritems())
+                iter_stack.append(p.iteritems())
             else:
                 sugs.append("".join(sug))
                 sug.pop()
-        return sugs
+        return new_root,map(lambda y: word+y, map(lambda x: x.replace('&',''), sugs))
+    # TODO-me sorting by top 10
 
     @classmethod
     def fromlist(cls,corpus):
@@ -101,9 +107,87 @@ class Trie:
 
         return t
 
-
 if __name__ == '__main__':
+    #
+    # import pickle
+    # with open('/home/maksim/dev_projects/spell_sug/model_pkl','r') as f:
+    #     model = pickle.load(f)
+    # model = {word: score for word,score in model.items() if score > 5}
+    # t = Trie.fromlist(model.keys())
+    #
+    # while True:
+    #     start = raw_input()
+    #     # start = u'резу'
+    #     print start[0]
+    #     d,r = t.matches(start[0])
+    #     print ",".join(map(lambda x: start[:1]+x,r[1:10]))
+    #     for i in range(1,len(start)):
+    #         print start[i]
+    #         d,r = t.matches(start[i],d)
+    #         print ",".join(map(lambda x: start[:i]+x,r[1:10]))
 
-    t = Trie.fromlist(['bob','ben','benton','bedstuy'])
-    print t
-    print t.matches('be')
+    t = Trie.fromlist(['ben','benton','benjamin','bedstuy','bedford'])
+    letter = raw_input('write a letter: ')
+    word = [letter]
+    d,r = t.matches(letter)
+    i = 1
+    print ",".join(map(lambda x: ''.join(word[:i])+x[1:],r[0:10]))
+    while True:
+        i+=1
+        letter = raw_input('write a letter: ')
+        word.append(letter)
+        d,r = t.matches(letter,d)
+        print ",".join(map(lambda x: ''.join(word[:i])+x[1:],r[0:10]))
+    # try:
+    #     # Initialize curses
+    #     stdscr = curses.initscr()
+    #     stdscr.clear()
+    #     # where no buffering is performed on keyboard input
+    #     curses.cbreak()
+    #
+    #     # In keypad mode, escape sequences for special keys
+    #     # (like the cursor keys) will be interpreted and
+    #     # a special value like curses.KEY_LEFT will be returned
+    #     stdscr.keypad(1)
+    #
+    #
+    #     curses.echo()
+    #     stdscr.addstr(2, 3, 'write a word')
+    #     stdscr.refresh()
+    #
+    #     c = 3
+    #     letter = stdscr.getkey(2 + 1, c)
+    #     c += 1
+    #     word = [letter]
+    #     d,r = t.matches(letter)
+    #     i = 1
+    #     stdscr.addstr(1,3, ''.join(word))
+    #     stdscr.addstr(4,3,",".join(map(lambda x: ''.join(word[:i-1])+x,r[1:10])))
+    #     while True:
+    #         letter = stdscr.getkey(2 + 1, c)
+    #         # if letter == 'KEY_BACKSPACE':
+    #         #     word.pop()
+    #         #     stdscr.addstr(1,3, ''.join(word))
+    #         #     stdscr.
+    #         #     continue
+    #         word.append(letter)
+    #         stdscr.addstr(1,3, ''.join(word))
+    #         c+=1
+    #         i+=1
+    #         d,r = t.matches(letter,d)
+    #         print d,r
+    #         stdscr.addstr(4,3,",".join(map(lambda x: ''.join(word[:i-1])+x,r[1:10])))
+    #
+    #
+    #     # Set everything back to normal
+    #     stdscr.keypad(0)
+    #     curses.echo()
+    #     curses.nocbreak()
+    #     curses.endwin()                 # Terminate curses
+    # except Exception as e:
+    #     # In event of error, restore terminal to sane state.
+    #     stdscr.keypad(0)
+    #     curses.echo()
+    #     curses.nocbreak()
+    #     curses.endwin()
+    #     traceback.print_exc()           # Print the exception
