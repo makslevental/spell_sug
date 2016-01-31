@@ -7,7 +7,7 @@ import collections, codecs, re, pickle, os, bz2
 
 eng_albet = 'abcdefghijklmnopqrstuvwxyz'
 rus_albet = u'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
-file_loc = os.path.realpath(__file__)+os.path.sep
+file_loc = os.path.dirname(os.path.realpath(__file__))+os.path.sep
 
 class Language:
     ENGLISH = 1
@@ -61,4 +61,5 @@ class Model:
         open(newfp, 'wb').write(data)
 
 if __name__ == "__main__":
-    pass
+    m = Model(Language.ENGLISH)
+    print m.model[1:10]
