@@ -1,1 +1,3 @@
-from trie.py import *
+from trie import Trie
+from trie import FreqTrie
+

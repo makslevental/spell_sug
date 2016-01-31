@@ -8,7 +8,7 @@ Work only for py 2.
 
 import pprint
 import lang
-import re
+import operator
 
 class Trie():
     def __init__(self):
@@ -33,7 +33,7 @@ class Trie():
                 nxt = nxt[l]
         nxt['&'] = {}
 
-    def __suggestions(self, word, root=None):
+    def _suffices(self, word, root=None):
 
         if not root:
             root = self._root
@@ -64,7 +64,7 @@ class Trie():
         return new_root, sugs
 
     def matches(self, word, root=None):
-        new_root, sugs = self.__suggestions(word, root)
+        new_root, sugs = self._suffices(word, root)
         return new_root,map(lambda y: word+y, map(lambda x: x.replace('&',''), sugs))
     # TODO-me sorting by top 10
 
@@ -80,7 +80,6 @@ class Trie():
 class FreqTrie(Trie):
     def __init__(self):
         Trie.__init__(self)
-        self.sep = re.compile(r"[a-zA-Z]+|\d+")
 
     def insert(self, word_tuple):
 
@@ -93,12 +92,14 @@ class FreqTrie(Trie):
                 nxt[l] = {}
                 nxt = nxt[l]
 
-        nxt[str(word_tuple[1])] = {}
+        nxt['&'+str(word_tuple[1])] = {}
 
     def matches(self, word, root=None):
-        new_root, sugs = self.__suggestions(word, root)
-        return new_root,map(lambda y: (word+y[0],y[1] if len(y) == 2 else 0),
-                            map(lambda x: tuple(self.sep.findall(x)), sugs))
+        new_root, sugs = self._suffices(word, root)
+        return new_root, sorted(map(lambda y: (word+y[0],y[1] if len(y) == 2 else 0),
+                                    map(lambda x: tuple(x.split('&')), sugs)),
+                                key=lambda x:int(operator.itemgetter(1)(x)),reverse=True)
+
 
     @classmethod
     def fromdict(cls, corpus_dict):
@@ -112,41 +113,16 @@ class FreqTrie(Trie):
 
 if __name__ == '__main__':
 
-    eng_lang = lang.Language.ENGLISH
-    eng_model = lang.Model(eng_lang)
-    eng_model.model = dict(eng_model.model.items()[0:50000])
-    ftrie = FreqTrie.fromdict(eng_model.model)
-    _,d = ftrie.matches('fa')
-    print d
-
-    # import pickle
-    # with open('/home/maksim/dev_projects/spell_sug/model_pkl','r') as f:
-    #     model = pickle.load(f)
-    # model = {word: score for word,score in model.items() if score > 5}
-    # t = Trie.fromlist(model.keys())
-
-    # while True:
-    #     start = raw_input()
-    #     # start = u'резу'
-    #     print start[0]
-    #     d,r = t.matches(start[0])
-    #     print ",".join(map(lambda x: start[:1]+x,r[1:10]))
-    #     for i in range(1,len(start)):
-    #         print start[i]
-    #         d,r = t.matches(start[i],d)
-    #         print ",".join(map(lambda x: start[:i]+x,r[1:10]))
+    # eng_model = lang.Model(lang.Language.ENGLISH)
+    # eng_model.model = dict(eng_model.model.items()[0:50000])
+    # ftrie = FreqTrie.fromdict(eng_model.model)
+    # _,d = ftrie.matches('fa')
+    # print d
     #
-    # with open(os.path.dirname(os.path.realpath(__file__))+os.path.sep+"../lang/english_words.txt") as f:
-    #         t = Trie.fromlist(f.read().split('\n'))
 
-    # letter = raw_input('write a letter: ')
-    # word = [letter]
-    # d,r = t.matches(letter)
-    # i = 1
-    # print ",".join(map(lambda x: ''.join(word[:i])+x[1:],r[0:10]))
-    # while True:
-    #     i+=1
-    #     letter = raw_input('write a letter: ')
-    #     word.append(letter)
-    #     d,r = t.matches(letter,d)
-    #     print ",".join(map(lambda x: ''.join(word[:i])+x[1:],r[0:10]))
+    rus_model = lang.Model(lang.Language.RUSSIAN)
+    # rus_model.model = dict(rus_model.model.items()[0:50000])
+    ftrie = FreqTrie.fromdict(rus_model.model)
+    _,d = ftrie.matches(u'резу')
+    for w in d:
+        print w[0],w[1]
