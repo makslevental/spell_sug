@@ -5,11 +5,12 @@ Trie data structure specialized to strings, insertions and traversals only.
 Adapted from https://bitbucket.org/gsakkis/pytrie.
 Work only for py 2.
 """
-import curses, traceback, os
+
 import pprint
+import lang
+import re
 
-
-class Trie:
+class Trie():
     def __init__(self):
         self._root = {}
         self._pp = pprint.PrettyPrinter(indent=1)
@@ -32,7 +33,8 @@ class Trie:
                 nxt = nxt[l]
         nxt['&'] = {}
 
-    def matches(self, word, root=None):
+    def __suggestions(self, word, root=None):
+
         if not root:
             root = self._root
         p = root[word[0]]
@@ -59,6 +61,10 @@ class Trie:
             else:
                 sugs.append("".join(sug))
                 sug.pop()
+        return new_root, sugs
+
+    def matches(self, word, root=None):
+        new_root, sugs = self.__suggestions(word, root)
         return new_root,map(lambda y: word+y, map(lambda x: x.replace('&',''), sugs))
     # TODO-me sorting by top 10
 
@@ -72,6 +78,9 @@ class Trie:
 
 
 class FreqTrie(Trie):
+    def __init__(self):
+        Trie.__init__(self)
+        self.sep = re.compile(r"[a-zA-Z]+|\d+")
 
     def insert(self, word_tuple):
 
@@ -87,38 +96,29 @@ class FreqTrie(Trie):
         nxt[str(word_tuple[1])] = {}
 
     def matches(self, word, root=None):
-        if not root:
-            root = self._root
-        p = root[word[0]]
-        for l in word[1:]:
-            p = p[l]
+        new_root, sugs = self.__suggestions(word, root)
+        return new_root,map(lambda y: (word+y[0],y[1] if len(y) == 2 else 0),
+                            map(lambda x: tuple(self.sep.findall(x)), sugs))
 
-        new_root = p
-        sug = ['']
-        sugs = []
-        iter_stack = []
-        iter_stack.append(p.iteritems())
+    @classmethod
+    def fromdict(cls, corpus_dict):
+        t = cls()
+        for word_tuple in corpus_dict.items():
+            t.insert(word_tuple)
 
-        while iter_stack:
-            try:
-                nxt = iter_stack[-1].next()
-            except StopIteration:
-                sug.pop()
-                iter_stack.pop()
-                continue
-            letter, p = nxt
-            sug.append(letter)
-            if p:
-                iter_stack.append(p.iteritems())
-            else:
-                sugs.append("".join(sug))
-                sug.pop()
-        return new_root,map(lambda y: (word+y[0],y[1]), map(lambda x: (x[:-1], int(x[-1])), sugs))
+        return t
 
 
 
 if __name__ == '__main__':
-    pass
+
+    eng_lang = lang.Language.ENGLISH
+    eng_model = lang.Model(eng_lang)
+    eng_model.model = dict(eng_model.model.items()[0:50000])
+    ftrie = FreqTrie.fromdict(eng_model.model)
+    _,d = ftrie.matches('fa')
+    print d
+
     # import pickle
     # with open('/home/maksim/dev_projects/spell_sug/model_pkl','r') as f:
     #     model = pickle.load(f)
