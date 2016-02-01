@@ -1,6 +1,7 @@
 # spell_sug
 Spelling suggestions
 
-right now only Trie/trie.py does anything (test)
+<<nothing works yet because i haven't pushed the 
+dictionaries>>
 
-run `python trie.py`
+run `python spell_sug.py`
