@@ -15,12 +15,12 @@ class Language:
     RUSSIAN = 2
 
 class Model:
-    def __init__(self, lang):
-        self.lang = lang
-        if lang == Language.ENGLISH:
+    def __init__(self, language):
+        self.language = language
+        if language == Language.ENGLISH:
             self.albet = eng_albet
             l = 'eng'
-        elif lang == Language.RUSSIAN:
+        elif language == Language.RUSSIAN:
             self.albet = rus_albet
             l = 'rus'
 
@@ -37,11 +37,11 @@ class Model:
                     f.write(data)
 
     @classmethod
-    def __train(cls,fp,lang):
+    def __train(cls,fp,language):
 
-        if lang == Language.ENGLISH:
+        if language == Language.ENGLISH:
             encod = 'ascii'
-        elif lang == Language.RUSSIAN:
+        elif language == Language.RUSSIAN:
             encod = 'utf-8'
 
         model = collections.defaultdict(lambda: 1)
@@ -54,12 +54,12 @@ class Model:
         return model
 
     @classmethod
-    def __create_model(cls,fp,lang):
+    def __create_model(cls,fp,language):
 
-        model = cls.__train(fp,lang)
-        if lang == Language.ENGLISH:
+        model = cls.__train(fp,language)
+        if language == Language.ENGLISH:
             model_fp = file_loc+'model_pkl_eng'
-        elif lang == Language.RUSSIAN:
+        elif language == Language.RUSSIAN:
             model_fp = file_loc+'model_pkl_rus'
 
         with open(model_fp, 'wb') as f:
@@ -77,4 +77,3 @@ class Model:
 
 if __name__ == "__main__":
     m = Model(Language.ENGLISH)
-    1

@@ -1,18 +1,17 @@
 
-# -*- coding: utf-8 -*-
-import curses, traceback
 import Trie
 import lang
 import Tkinter
+import argparse
 
 class simpleapp_tk(Tkinter.Tk):
 
 
-    def __init__(self,parent):
+    def __init__(self,parent,language):
         Tkinter.Tk.__init__(self,parent)
         self.parent = parent
-        eng_model = lang.Model(lang.Language.ENGLISH)
-        self.t = Trie.FreqTrie.fromdict(dict(eng_model.model.items()[:1000]))
+        m = lang.Model(language)
+        self.t = Trie.FreqTrie.fromdict(dict(m.model.items()[:1000]))
         self.d = None
         self.r = None
         self.initialize()
@@ -32,11 +31,13 @@ class simpleapp_tk(Tkinter.Tk):
         label.grid(column=0,row=1,columnspan=2,sticky='EW')
 
         self.grid_columnconfigure(0,weight=1)
-    def OnWrite(self, event):
-        letter = event.char
-        word = self.entry.get()
 
-        if letter == '\b':
+    def OnWrite(self, event):
+        letter = event.char.encode('utf-8')
+        word = self.entry.get()
+        if not letter:
+            return
+        elif letter == '\b':
             if len(word)-1 <= 0:
                 self.d = None
                 self.labelVariable.set('')
@@ -57,12 +58,16 @@ class simpleapp_tk(Tkinter.Tk):
 
 
 if __name__ == "__main__":
-    # rus_model = lang.Model(lang.Language.RUSSIAN)
-    # # rus_model.model = dict(rus_model.model.items()[0:50000])
-    # t = Trie.FreqTrie.fromdict(rus_model.model)
 
-
-    app = simpleapp_tk(None)
+    parser = argparse.ArgumentParser(description='choose language')
+    parser.add_argument('Language',type=str, nargs='?',
+                   help='choose a language (e for english, r for russian', default='e')
+    args = parser.parse_args()
+    if args.Language == 'e':
+        l = lang.Language.ENGLISH
+    elif args.Language == 'r':
+        l = lang.Language.RUSSIAN
+    app = simpleapp_tk(None,l)
     app.title('Spelling Suggestion')
     app.mainloop()
 
@@ -99,6 +104,7 @@ if __name__ == "__main__":
     #             d,_ = t.matches(''.join(word))
     #             stdscr.addstr(1,3, ''.join(word))
     #         # TODO-me statistics on at what word length i should just do pruning of the list
+    #           # TODO-me subclass defaultdict in order construct pointers to parents dicts
     #         # and hence be able to back up here more efficiently
     #             continue
     #         word.append(letter)
