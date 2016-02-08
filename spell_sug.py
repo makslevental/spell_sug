@@ -71,6 +71,10 @@ if __name__ == "__main__":
     app.title('Spelling Suggestion')
     app.mainloop()
 
+   #         # TODO-me statistics on at what word length i should just do pruning of the list
+    #           # TODO-me subclass defaultdict in order construct pointers to parents dicts
+    # TODO-me work in hte console functionality and add to argparse
+
     # try:
     #     # Initialize curses
     #     stdscr = curses.initscr()
@@ -103,8 +107,6 @@ if __name__ == "__main__":
     #             word.pop()
     #             d,_ = t.matches(''.join(word))
     #             stdscr.addstr(1,3, ''.join(word))
-    #         # TODO-me statistics on at what word length i should just do pruning of the list
-    #           # TODO-me subclass defaultdict in order construct pointers to parents dicts
     #         # and hence be able to back up here more efficiently
     #             continue
     #         word.append(letter)
