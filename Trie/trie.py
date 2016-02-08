@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Trie data structure specialized to strings, insertions and traversals only.
-Adapted from https://bitbucket.org/gsakkis/pytrie.
 Work only for py 2.
 """
 
