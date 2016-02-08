@@ -1,7 +1,7 @@
 # spell_sug
 Spelling suggestions
 
-nothing works yet because i haven't pushed the 
-dictionaries
+run `python spell_sug.py -<LANG>`
 
-run `python spell_sug.py`
+where `<LANG> == e` will do english suggestions
+and `<LANG> == r` will do russian suggestions
